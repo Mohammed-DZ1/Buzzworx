@@ -5,52 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mohammed Buzzworx Company Directory</title>
     <style>
+        @import url("https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900&display=swap");
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Poppins", sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #808080; /* Gray background */
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
         }
+
         header {
             text-align: center;
             padding: 20px;
-            background-color: #fff;
+            background-color: #808080; /* Gray */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
         header img {
-            width: 200px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
         }
+
         .search-container {
             margin: 20px auto;
             text-align: center;
         }
-        .search-container input {
+
+        .search-container input, .search-container select {
             padding: 10px;
             width: 80%;
             max-width: 400px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            margin-bottom: 10px;
         }
+
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
             padding: 20px;
+            width: 90%;
+            max-width: 1200px;
         }
+
+        @property --a {
+            syntax: "<angle>";
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        @keyframes rotating {
+            0% { --a: 0deg; }
+            100% { --a: 360deg; }
+        }
+
         .company-icon {
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: repeating-conic-gradient(
+                from var(--a),
+                #ff2770 0%,
+                #ff2770 5%,
+                transparent 5%,
+                transparent 40%,
+                #ff2770 50%
+            );
+            border-radius: 20px;
+            filter: drop-shadow(0 15px 50px #000);
+            transition: all 0.5s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
             cursor: pointer;
         }
-        .company-icon:hover {
-            transform: scale(1.05);
+
+        .company-icon img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
         }
+
+        .company-icon::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-conic-gradient(
+                from var(--a),
+                #45f3ff 0%,
+                #45f3ff 5%,
+                transparent 5%,
+                transparent 40%,
+                #45f3ff 50%
+            );
+            border-radius: 20px;
+            animation: rotating 4s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .company-icon::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            background: #2d2d39;
+            border-radius: 15px;
+            border: 8px solid #25252b;
+        }
+
+        .company-icon:hover {
+            width: 110%;
+            height: 300px;
+        }
+
+        .company-icon:hover::before {
+            animation-play-state: running;
+        }
+
+        .company-icon h3 {
+            color: #fff;
+            z-index: 1;
+            font-size: 1.5em;
+        }
+
         .modal {
             display: none;
+            opacity: 0;
             position: fixed;
             top: 0;
             left: 0;
@@ -59,15 +151,24 @@
             background-color: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
+            transition: opacity 0.3s ease;
         }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
         .modal-content {
-            background-color: #fff;
+            background-color: #FFFFFF; /* White for modal background */
+            color: #000000; /* Dark text for readability */
             padding: 20px;
             border-radius: 10px;
             width: 90%;
             max-width: 600px;
             position: relative;
         }
+
         .close {
             position: absolute;
             top: 10px;
@@ -75,17 +176,14 @@
             cursor: pointer;
             font-size: 20px;
         }
+
         .modal h2 {
             margin-top: 0;
         }
+
         .modal ul {
             list-style-type: none;
             padding: 0;
-        }
-        @media (max-width: 600px) {
-            .grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            }
         }
     </style>
 </head>
@@ -97,6 +195,20 @@
 
 <div class="search-container">
     <input type="text" id="search" placeholder="Search for companies...">
+    <select id="industryFilter">
+        <option value="">All Industries</option>
+        <option value="Health Tech">Health Tech</option>
+        <option value="Wellness">Wellness</option>
+        <option value="Health Diagnostics">Health Diagnostics</option>
+        <option value="Health Tech / Telemedicine">Health Tech / Telemedicine</option>
+        <option value="Wellness / Mental Health">Wellness / Mental Health</option>
+        <option value="Health Tech / Wearables">Health Tech / Wearables</option>
+        <option value="Wellness / Fitness">Wellness / Fitness</option>
+        <option value="Wellness / Nutrition">Wellness / Nutrition</option>
+        <option value="Wellness / Gut Health">Wellness / Gut Health</option>
+        <option value="Wellness / Beauty">Wellness / Beauty</option>
+        <option value="Health Tech / Genetics">Health Tech / Genetics</option>
+    </select>
 </div>
 
 <div class="grid" id="companyGrid"></div>
@@ -164,7 +276,6 @@
                 "Lack of press coverage in wellness media."
             ]
         },
-        // Add the remaining 41 companies here following the same structure
         {
             name: "Levels",
             industry: "Health Tech / Wearables",
@@ -791,8 +902,9 @@
         companies.forEach(company => {
             const icon = document.createElement('div');
             icon.className = 'company-icon';
+            const logoUrl = `https://logo.clearbit.com/${company.name.toLowerCase().replace(/ /g, '')}.com`;
             icon.innerHTML = `
-                <img src="buzzimages" alt="${company.name} Logo">
+            <img src="${logoUrl}" alt="${company.name} Logo" onerror="this.onerror=null; this.src='https://dummyimage.com/50';">
                 <h3>${company.name}</h3>
             `;
             icon.onclick = () => openModal(company);
@@ -820,16 +932,32 @@
             weakPointsList.appendChild(li);
         });
 
-        modal.style.display = 'flex';
+        modal.classList.add('show');
     }
 
+    // Close modal when clicking outside the modal content
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+
+    // Close modal when clicking the close button
     closeModal.onclick = () => {
-        modal.style.display = 'none';
-    }
+        modal.classList.remove('show');
+    };
 
     document.getElementById('search').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         const filteredCompanies = companies.filter(company => company.name.toLowerCase().includes(searchTerm));
+        displayCompanies(filteredCompanies);
+    });
+
+    document.getElementById('industryFilter').addEventListener('change', function() {
+        const selectedIndustry = this.value;
+        const filteredCompanies = companies.filter(company => 
+            selectedIndustry === "" || company.industry === selectedIndustry
+        );
         displayCompanies(filteredCompanies);
     });
 
