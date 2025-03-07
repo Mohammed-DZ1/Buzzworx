@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mohammed Buzzworx Company Directory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        header img {
+            width: 200px;
+        }
+        .search-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 80%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .company-icon {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .company-icon:hover {
+            transform: scale(1.05);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .modal h2 {
+            margin-top: 0;
+        }
+        .modal ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="https://ik.imagekit.io/0edozlrn0/Buzzworx%20PR%20AGENCY.png?updatedAt=1737135244083" alt="Buzzworx Logo">
+</header>
+
+<div class="search-container">
+    <input type="text" id="search" placeholder="Search for companies...">
+</div>
+
+<div class="grid" id="companyGrid"></div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <h2 id="modalName"></h2>
+        <p><strong>Industry:</strong> <span id="modalIndustry"></span></p>
+        <p><strong>Headquarters:</strong> <span id="modalHeadquarters"></span></p>
+        <p><strong>CEO:</strong> <span id="modalCEO"></span></p>
+        <p><strong>Website:</strong> <a id="modalWebsite" href="#" target="_blank"></a></p>
+        <p><strong>Instagram:</strong> <a id="modalInstagram" href="#" target="_blank"></a></p>
+        <p><strong>Phone Number:</strong> <span id="modalPhone"></span></p>
+        <p><strong>Flagship Product/Service:</strong> <span id="modalFlagship"></span></p>
+        <p><strong>Potential Weak Points Identified:</strong></p>
+        <ul id="modalWeakPoints"></ul>
+    </div>
+</div>
+
+<script>
+    const companies = [
+        {
+            name: "Everlywell",
+            industry: "Health Diagnostics",
+            headquarters: "Austin, Texas, United States",
+            ceo: "Julia Cheek",
+            website: "https://www.everlywell.com/",
+            instagram: "@everlywell",
+            phone: "(512) 309-5588",
+            flagship: "At-home health test kits (e.g., food sensitivity, thyroid, and STD tests)",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more press coverage in health and wellness media.",
+                "Low Instagram engagement relative to follower count."
+            ]
+        },
+        {
+            name: "Nurx",
+            industry: "Health Tech / Telemedicine",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Varsha Rao",
+            website: "https://www.nurx.com/",
+            instagram: "@nurx",
+            phone: "(415) 941-2500",
+            flagship: "Online prescriptions for birth control and PrEP (HIV prevention)",
+            weakPoints: [
+                "Low Instagram engagement despite a large following.",
+                "Need for more localized US-focused campaigns.",
+                "Lack of influencer partnerships to boost credibility."
+            ]
+        },
+        {
+            name: "Calmigo",
+            industry: "Wellness / Mental Health",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "David Gandelman",
+            website: "https://www.calmigo.com/",
+            instagram: "@calmigo",
+            phone: "(888) 939-8881",
+            flagship: "Calmigo device for stress and anxiety relief",
+            weakPoints: [
+                "Limited brand awareness in the US market.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in wellness media."
+            ]
+        },
+        // Add the remaining 41 companies here following the same structure
+        {
+            name: "Levels",
+            industry: "Health Tech / Wearables",
+            headquarters: "New York, New York, United States",
+            ceo: "Sam Corcos",
+            website: "https://www.levelshealth.com/",
+            instagram: "@levelshealth",
+            phone: "Not publicly listed",
+            flagship: "Continuous glucose monitoring (CGM) for metabolic health tracking.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to expand reach.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Parsley Health",
+            industry: "Wellness / Telemedicine",
+            headquarters: "New York, New York, United States",
+            ceo: "Dr. Robin Berzin",
+            website: "https://www.parsleyhealth.com/",
+            instagram: "@parsleyhealth",
+            phone: "(855) 774-5275",
+            flagship: "Virtual healthcare for chronic conditions and preventive care.",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more press coverage in health and wellness media.",
+                "Low Instagram engagement relative to follower count."
+            ]
+        },
+        {
+            name: "Oura Health",
+            industry: "Health Tech / Wearables",
+            headquarters: "Oulu, Finland (US operations in San Francisco, California)",
+            ceo: "Tom Hale",
+            website: "https://ouraring.com/",
+            instagram: "@oura",
+            phone: "Not publicly listed",
+            flagship: "Oura Ring for sleep, activity, and recovery tracking.",
+            weakPoints: [
+                "Low Instagram engagement despite a strong product.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Modern Fertility",
+            industry: "Health Tech / Women’s Health",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Afton Vechery",
+            website: "https://modernfertility.com/",
+            instagram: "@modernfertility",
+            phone: "(415) 941-2500",
+            flagship: "At-home fertility hormone tests.",
+            weakPoints: [
+                "Limited brand awareness in the US market.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in wellness media."
+            ]
+        },
+        {
+            name: "Headspace Health",
+            industry: "Wellness / Mental Health",
+            headquarters: "Santa Monica, California, United States",
+            ceo: "Russell Glass",
+            website: "https://www.headspace.com/",
+            instagram: "@headspace",
+            phone: "(855) 432-3823",
+            flagship: "Meditation and mindfulness app.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for user complaints."
+            ]
+        },
+        {
+            name: "Hims & Hers",
+            industry: "Health Tech / Telemedicine",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Andrew Dudum",
+            website: "https://www.forhims.com/",
+            instagram: "@forhims",
+            phone: "(800) 368-3065",
+            flagship: "Online prescriptions for hair loss, skincare, and sexual health.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Ro",
+            industry: "Health Tech / Telemedicine",
+            headquarters: "New York, New York, United States",
+            ceo: "Zachariah Reitano",
+            website: "https://www.ro.co/",
+            instagram: "@ro",
+            phone: "Not publicly listed",
+            flagship: "Online prescriptions for men’s and women’s health.",
+            weakPoints: [
+                "Low Instagram engagement despite a strong product.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Whoop",
+            industry: "Health Tech / Wearables",
+            headquarters: "Boston, Massachusetts, United States",
+            ceo: "Will Ahmed",
+            website: "https://www.whoop.com/",
+            instagram: "@whoop",
+            phone: "Not publicly listed",
+            flagship: "Whoop Strap for fitness and recovery tracking.",
+            weakPoints: [
+                "Low Instagram engagement despite a niche audience.",
+                "Need for more press coverage in fitness and tech media.",
+                "Limited influencer collaborations."
+            ]
+        },
+        {
+            name: "Garmin",
+            industry: "Health Tech / Wearables",
+            headquarters: "Olathe, Kansas, United States",
+            ceo: "Cliff Pemble",
+            website: "https://www.garmin.com/",
+            instagram: "@garmin",
+            phone: "(913) 397-8200",
+            flagship: "Garmin smartwatches for fitness tracking.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for user complaints."
+            ]
+        },
+        {
+            name: "Peloton",
+            industry: "Wellness / Fitness",
+            headquarters: "New York, New York, United States",
+            ceo: "Barry McCarthy",
+            website: "https://www.onepeloton.com/",
+            instagram: "@onepeloton",
+            phone: "(866) 679-9129",
+            flagship: "Peloton Bike and virtual fitness classes.",
+            weakPoints: [
+                "Reputation management needed due to past controversies.",
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to rebuild trust."
+            ]
+        },
+        {
+            name: "Calm",
+            industry: "Wellness / Mental Health",
+            headquarters: "San Francisco, California, United States",
+            ceo: "David Ko",
+            website: "https://www.calm.com/",
+            instagram: "@calm",
+            phone: "Not publicly listed",
+            flagship: "Meditation and sleep stories app.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for user complaints."
+            ]
+        },
+        {
+            name: "Noom",
+            industry: "Wellness / Weight Loss",
+            headquarters: "New York, New York, United States",
+            ceo: "Saeju Jeong",
+            website: "https://www.noom.com/",
+            instagram: "@noom",
+            phone: "(917) 336-1337",
+            flagship: "Weight loss coaching app.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "23andMe",
+            industry: "Health Tech / Genetics",
+            headquarters: "Sunnyvale, California, United States",
+            ceo: "Anne Wojcicki",
+            website: "https://www.23andme.com/",
+            instagram: "@23andme",
+            phone: "(800) 239-5230",
+            flagship: "At-home DNA testing kits.",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream wellness media."
+            ]
+        },
+        {
+            name: "Fitbit",
+            industry: "Health Tech / Wearables",
+            headquarters: "San Francisco, California, United States",
+            ceo: "James Park",
+            website: "https://www.fitbit.com/",
+            instagram: "@fitbit",
+            phone: "(877) 623-4997",
+            flagship: "Fitbit smartwatches and fitness trackers.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for user complaints."
+            ]
+        },
+        {
+            name: "MyFitnessPal",
+            industry: "Wellness / Fitness",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Tricia Han",
+            website: "https://www.myfitnesspal.com/",
+            instagram: "@myfitnesspal",
+            phone: "Not publicly listed",
+            flagship: "Calorie and fitness tracking app.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "ClassPass",
+            industry: "Wellness / Fitness",
+            headquarters: "New York, New York, United States",
+            ceo: "Fritz Lanman",
+            website: "https://www.classpass.com/",
+            instagram: "@classpass",
+            phone: "Not publicly listed",
+            flagship: "Subscription for fitness classes and wellness activities.",
+            weakPoints: [
+                "Limited brand awareness outside of urban areas.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream fitness media."
+            ]
+        },
+        {
+            name: "Glossier",
+            industry: "Wellness / Beauty",
+            headquarters: "New York, New York, United States",
+            ceo: "Kyle Leahy",
+            website: "https://www.glossier.com/",
+            instagram: "@glossier",
+            phone: "Not publicly listed",
+            flagship: "Skincare and makeup products.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for negative reviews."
+            ]
+        },
+        {
+            name: "Talkspace",
+            industry: "Wellness / Mental Health",
+            headquarters: "New York, New York, United States",
+            ceo: "Jon Cohen",
+            website: "https://www.talkspace.com/",
+            instagram: "@talkspace",
+            phone: "(844) 452-4543",
+            flagship: "Online therapy sessions with licensed therapists.",
+            weakPoints: [
+                "Limited engagement on Instagram despite a large following.",
+                "Need for more localized US-focused campaigns.",
+                "Lack of influencer partnerships to boost credibility."
+            ]
+        },
+        {
+            name: "BetterHelp",
+            industry: "Wellness / Mental Health",
+            headquarters: "Mountain View, California, United States",
+            ceo: "Alon Matas",
+            website: "https://www.betterhelp.com/",
+            instagram: "@betterhelp",
+            phone: "Not publicly listed",
+            flagship: "Online therapy with licensed counselors.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Reputation management needed to address negative reviews.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Mindbody",
+            industry: "Wellness / Fitness",
+            headquarters: "San Luis Obispo, California, United States",
+            ceo: "Josh McCarter",
+            website: "https://www.mindbodyonline.com/",
+            instagram: "@mindbody",
+            phone: "(877) 755-4279",
+            flagship: "Business management software for fitness studios.",
+            weakPoints: [
+                "Limited brand awareness outside the fitness industry.",
+                "Need for more engaging content on Instagram.",
+                "Lack of influencer partnerships to expand reach."
+            ]
+        },
+        {
+            name: "Zwift",
+            industry: "Wellness / Fitness Tech",
+            headquarters: "Long Beach, California, United States",
+            ceo: "Eric Min",
+            website: "https://www.zwift.com/",
+            instagram: "@gowithzwift",
+            phone: "Not publicly listed",
+            flagship: "Virtual fitness platform for cycling and running.",
+            weakPoints: [
+                "Low Instagram engagement despite a niche audience.",
+                "Need for more press coverage in fitness and tech media.",
+                "Limited influencer collaborations."
+            ]
+        },
+        {
+            name: "Strava",
+            industry: "Wellness / Fitness Tech",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Michael Horvath",
+            website: "https://www.strava.com/",
+            instagram: "@strava",
+            phone: "Not publicly listed",
+            flagship: "Fitness tracking and social network for athletes.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for user complaints."
+            ]
+        },
+        {
+            name: "Daily Harvest",
+            industry: "Wellness / Nutrition",
+            headquarters: "New York, New York, United States",
+            ceo: "Rachel Drori",
+            website: "https://www.daily-harvest.com/",
+            instagram: "@dailyharvest",
+            phone: "(646) 846-3666",
+            flagship: "Frozen plant-based meals and smoothies.",
+            weakPoints: [
+                "Reputation management needed due to past product recalls.",
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to rebuild trust."
+            ]
+        },
+        {
+            name: "Thrive Market",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Nick Green",
+            website: "https://www.thrivemarket.com/",
+            instagram: "@thrivemarket",
+            phone: "(866) 419-3834",
+            flagship: "Membership-based online grocery store.",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream media."
+            ]
+        },
+        {
+            name: "Ritual",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Katerina Schneider",
+            website: "https://www.ritual.com/",
+            instagram: "@ritual",
+            phone: "Not publicly listed",
+            flagship: "Essential for Women and Essential for Men multivitamins.",
+            weakPoints: [
+                "Low Instagram engagement despite a strong product.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Care/of",
+            industry: "Wellness / Nutrition",
+            headquarters: "New York, New York, United States",
+            ceo: "Craig Elbert",
+            website: "https://www.takecareof.com/",
+            instagram: "@careof",
+            phone: "Not publicly listed",
+            flagship: "Customized vitamin packs.",
+            weakPoints: [
+                "Limited brand awareness in the US market.",
+                "Need for more press coverage in wellness media.",
+                "Low Instagram engagement relative to follower count."
+            ]
+        },
+        {
+            name: "Seed",
+            industry: "Wellness / Gut Health",
+            headquarters: "New York, New York, United States",
+            ceo: "Ara Katz",
+            website: "https://www.seed.com/",
+            instagram: "@seed",
+            phone: "Not publicly listed",
+            flagship: "Daily Synbiotic probiotic supplement.",
+            weakPoints: [
+                "Low Instagram engagement despite a niche audience.",
+                "Need for more influencer partnerships to expand reach.",
+                "Limited press coverage in mainstream wellness media."
+            ]
+        },
+        {
+            name: "Olly",
+            industry: "Wellness / Nutrition",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Eric Ryan",
+            website: "https://www.olly.com/",
+            instagram: "@olly",
+            phone: "Not publicly listed",
+            flagship: "Gummy vitamins for sleep, energy, and immunity.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for negative reviews."
+            ]
+        },
+        {
+            name: "Vital Proteins",
+            industry: "Wellness / Nutrition",
+            headquarters: "Chicago, Illinois, United States",
+            ceo: "Kurt Seidensticker",
+            website: "https://www.vitalproteins.com/",
+            instagram: "@vitalproteins",
+            phone: "(312) 766-7259",
+            flagship: "Collagen peptides for skin, hair, and joint health.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Four Sigmatic",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Tero Isokauppila",
+            website: "https://www.foursigmatic.com/",
+            instagram: "@foursigmatic",
+            phone: "Not publicly listed",
+            flagship: "Mushroom coffee and elixirs.",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream wellness media."
+            ]
+        },
+        {
+            name: "Moon Juice",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Amanda Chantal Bacon",
+            website: "https://www.moonjuice.com/",
+            instagram: "@moonjuice",
+            phone: "Not publicly listed",
+            flagship: "Adaptogenic blends and beauty powders.",
+            weakPoints: [
+                "Low Instagram engagement despite a strong product.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Sakara Life",
+            industry: "Wellness / Nutrition",
+            headquarters: "New York, New York, United States",
+            ceo: "Whitney Tingle and Danielle DuBoise",
+            website: "https://www.sakara.com/",
+            instagram: "@sakaralife",
+            phone: "Not publicly listed",
+            flagship: "Organic meal delivery and detox programs.",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream wellness media."
+            ]
+        },
+        {
+            name: "Athletic Greens",
+            industry: "Wellness / Nutrition",
+            headquarters: "New York, New York, United States",
+            ceo: "Chris Ashenden",
+            website: "https://www.athleticgreens.com/",
+            instagram: "@athleticgreens",
+            phone: "Not publicly listed",
+            flagship: "AG1 (Athletic Greens) daily supplement.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Bulletproof",
+            industry: "Wellness / Nutrition",
+            headquarters: "Seattle, Washington, United States",
+            ceo: "Dave Asprey",
+            website: "https://www.bulletproof.com/",
+            instagram: "@bulletproof",
+            phone: "(888) 598-6329",
+            flagship: "Bulletproof Coffee and Brain Octane oil.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for negative reviews."
+            ]
+        },
+        {
+            name: "Kettle & Fire",
+            industry: "Wellness / Nutrition",
+            headquarters: "San Francisco, California, United States",
+            ceo: "Justin Mares",
+            website: "https://www.kettleandfire.com/",
+            instagram: "@kettleandfire",
+            phone: "Not publicly listed",
+            flagship: "Bone broth for gut health and immunity.",
+            weakPoints: [
+                "Limited brand awareness outside of niche audiences.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream wellness media."
+            ]
+        },
+        {
+            name: "Health-Ade",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Daina Trout",
+            website: "https://health-ade.com/",
+            instagram: "@healthade",
+            phone: "Not publicly listed",
+            flagship: "Kombucha in various flavors.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Suja Juice",
+            industry: "Wellness / Nutrition",
+            headquarters: "San Diego, California, United States",
+            ceo: "Jeff Church",
+            website: "https://www.sujajuice.com/",
+            instagram: "@sujajuice",
+            phone: "Not publicly listed",
+            flagship: "Cold-pressed juices and wellness shots.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for negative reviews."
+            ]
+        },
+        {
+            name: "Pressed Juicery",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Hayden Slater",
+            website: "https://www.pressedjuicery.com/",
+            instagram: "@pressedjuicery",
+            phone: "Not publicly listed",
+            flagship: "Cold-pressed juices and Freeze (vegan soft serve).",
+            weakPoints: [
+                "Limited brand awareness outside of urban areas.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream wellness media."
+            ]
+        },
+        {
+            name: "Juice Press",
+            industry: "Wellness / Nutrition",
+            headquarters: "New York, New York, United States",
+            ceo: "Marcus Antebi",
+            website: "https://juicepress.com/",
+            instagram: "@juicepress",
+            phone: "Not publicly listed",
+            flagship: "Cold-pressed juices and plant-based meals.",
+            weakPoints: [
+                "Low Instagram engagement relative to follower count.",
+                "Need for more influencer partnerships to boost credibility.",
+                "Unfocused social media strategy."
+            ]
+        },
+        {
+            name: "Sweetgreen",
+            industry: "Wellness / Nutrition",
+            headquarters: "Los Angeles, California, United States",
+            ceo: "Jonathan Neman",
+            website: "https://www.sweetgreen.com/",
+            instagram: "@sweetgreen",
+            phone: "Not publicly listed",
+            flagship: "Seasonal salads and bowls.",
+            weakPoints: [
+                "Declining organic reach on Instagram.",
+                "Need for more localized US campaigns.",
+                "Lack of crisis management strategies for negative reviews."
+            ]
+        },
+        {
+            name: "Dig Inn",
+            industry: "Wellness / Nutrition",
+            headquarters: "New York, New York, United States",
+            ceo: "Adam Eskin",
+            website: "https://www.diginn.com/",
+            instagram: "@diginn",
+            phone: "Not publicly listed",
+            flagship: "Seasonal bowls and plates.",
+            weakPoints: [
+                "Limited brand awareness outside of urban areas.",
+                "Need for more engaging content on Instagram.",
+                "Lack of press coverage in mainstream wellness media."
+            ]
+        }
+    ];
+
+    const companyGrid = document.getElementById('companyGrid');
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+
+    function displayCompanies(companies) {
+        companyGrid.innerHTML = '';
+        companies.forEach(company => {
+            const icon = document.createElement('div');
+            icon.className = 'company-icon';
+            icon.innerHTML = `
+                <img src="https://via.placeholder.com/50" alt="${company.name} Logo">
+                <h3>${company.name}</h3>
+            `;
+            icon.onclick = () => openModal(company);
+            companyGrid.appendChild(icon);
+        });
+    }
+
+    function openModal(company) {
+        document.getElementById('modalName').innerText = company.name;
+        document.getElementById('modalIndustry').innerText = company.industry;
+        document.getElementById('modalHeadquarters').innerText = company.headquarters;
+        document.getElementById('modalCEO').innerText = company.ceo;
+        document.getElementById('modalWebsite').innerText = company.website;
+        document.getElementById('modalWebsite').href = company.website;
+        document.getElementById('modalInstagram').innerText = company.instagram;
+        document.getElementById('modalInstagram').href = `https://www.instagram.com/${company.instagram.replace('@', '')}`;
+        document.getElementById('modalPhone').innerText = company.phone || 'Not available';
+        document.getElementById('modalFlagship').innerText = company.flagship;
+
+        const weakPointsList = document.getElementById('modalWeakPoints');
+        weakPointsList.innerHTML = '';
+        company.weakPoints.forEach(point => {
+            const li = document.createElement('li');
+            li.innerText = point;
+            weakPointsList.appendChild(li);
+        });
+
+        modal.style.display = 'flex';
+    }
+
+    closeModal.onclick = () => {
+        modal.style.display = 'none';
+    }
+
+    document.getElementById('search').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const filteredCompanies = companies.filter(company => company.name.toLowerCase().includes(searchTerm));
+        displayCompanies(filteredCompanies);
+    });
+
+    // Initial display of all companies
+    displayCompanies(companies);
+</script>
+
+</body>
+</html>
